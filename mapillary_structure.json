@@ -7,8 +7,15 @@
     ],
     "providers": [
         {
-            "description": "A Python map-matching library",
-            "name": "map_matching",
+            "dependencies": [],
+            "description": "Provider for the map-matching library",
+            "name": "map_matching_library_provider",
+            "services": [
+                {
+                    "description": "A Python map-matching library",
+                    "name": "map_macthing_library"
+                }
+            ],
             "type": "library"
         }
     ],
