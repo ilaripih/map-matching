@@ -1,7 +1,7 @@
 import collections
 import itertools
 
-import shortest_path as sp
+from .shortest_path import *
 from .utils import Edge
 
 try:
@@ -307,7 +307,7 @@ def road_network_route(source_edge_location,
 
     if not adhoc_network:
         assert not isinstance(source_node, AdHocNode) and not isinstance(target_node, AdHocNode)
-        return sp.find_shortest_path(source_node, target_node, get_edges, max_path_cost)
+        return find_shortest_path(source_node, target_node, get_edges, max_path_cost)
 
     def _get_edges(node):
         if isinstance(node, AdHocNode):
@@ -318,7 +318,7 @@ def road_network_route(source_edge_location,
         else:
             return get_edges(node)
 
-    return sp.find_shortest_path(source_node, target_node, _get_edges, max_path_cost)
+    return find_shortest_path(source_node, target_node, _get_edges, max_path_cost)
 
 
 def road_network_route_many(source_edge_location,
@@ -345,7 +345,7 @@ def road_network_route_many(source_edge_location,
     if not adhoc_network:
         for node in adhoc_nodes:
             assert not isinstance(node, AdHocNode)
-        return sp.find_many_shortest_paths(source_node, target_nodes, get_edges, max_path_cost)
+        return find_many_shortest_paths(source_node, target_nodes, get_edges, max_path_cost)
 
     def _get_edges(node):
         if isinstance(node, AdHocNode):
@@ -356,7 +356,7 @@ def road_network_route_many(source_edge_location,
         else:
             return get_edges(node)
 
-    return sp.find_many_shortest_paths(source_node, target_nodes, _get_edges, max_path_cost)
+    return find_many_shortest_paths(source_node, target_nodes, _get_edges, max_path_cost)
 
 
 def test_road_network_route():
@@ -450,9 +450,9 @@ def test_road_network_route():
 
     # It should not find a path
     from nose.tools import assert_raises
-    assert_raises(sp.PathNotFound, road_network_route, (e13, 0.2), (e24, 0.9), _get_edges, 10)
-    assert_raises(sp.PathNotFound, road_network_route, (e13, 0), (e89, 0.5), _get_edges)
-    assert_raises(sp.PathNotFound, road_network_route, (e89, 0.9), (e89, 0.2), _get_edges, 10)
+    assert_raises(PathNotFound, road_network_route, (e13, 0.2), (e24, 0.9), _get_edges, 10)
+    assert_raises(PathNotFound, road_network_route, (e13, 0), (e89, 0.5), _get_edges)
+    assert_raises(PathNotFound, road_network_route, (e89, 0.9), (e89, 0.2), _get_edges, 10)
 
     # It should return multiple paths
     targets = [(e16, 0.6), (e13, 0.3), (e34, 0.5), (e56, 1)]
@@ -523,7 +523,7 @@ def test_road_network_route():
         for target in targets:
             try:
                 _, route_distance = road_network_route(source, target, _get_edges)
-            except sp.PathNotFound:
+            except PathNotFound:
                 route_distance = -1
             route_distances.append(route_distance)
         return route_distances
