@@ -99,7 +99,7 @@ def set_directions(candidates):
     # only single candidate, it's direction is unknown.
 
 
-class MapMatching(viterbi_path.ViterbiSearch):
+class MapMatching(ViterbiSearch):
     def __init__(self, get_road_edges,
                  max_route_distance=DEFAULT_MAX_ROUTE_DISTANCE,
                  beta=DEFAULT_BETA,
@@ -118,12 +118,12 @@ class MapMatching(viterbi_path.ViterbiSearch):
         max_route_distance = self.calculate_max_route_distance(
             source.measurement, target.measurement)
         try:
-            _, route_distance = road_routing.road_network_route(
+            _, route_distance = road_network_route(
                 (source.edge, source.location),
                 (target.edge, target.location),
                 self.get_road_edges,
                 max_path_cost=max_route_distance)
-        except shortest_path.PathNotFound as err:
+        except PathNotFound as err:
             # Not reachable
             return -1
         # Geodesic distance based on WGS 84 spheroid
@@ -143,7 +143,7 @@ class MapMatching(viterbi_path.ViterbiSearch):
 
         max_route_distance = self.calculate_max_route_distance(
             source.measurement, target_measurement)
-        route_results = road_routing.road_network_route_many(
+        route_results = road_network_route_many(
             (source.edge, source.location),
             [(tc.edge, tc.location) for tc in targets],
             self.get_road_edges,
@@ -198,7 +198,7 @@ import math
 
 
 # A slower version of map matching
-class NaiveMapMatching(viterbi_path.NaiveViterbiSearch, MapMatching):
+class NaiveMapMatching(NaiveViterbiSearch, MapMatching):
     def calculate_emission_cost(self, candidate):
         distance = candidate.distance
         n = -(distance * distance) / (self.sigma_z * self.sigma_z * 2)
@@ -214,7 +214,7 @@ class NaiveMapMatching(viterbi_path.NaiveViterbiSearch, MapMatching):
 
         max_route_distance = self.calculate_max_route_distance(
             source.measurement, target_measurement)
-        route_results = road_routing.road_network_route_many(
+        route_results = road_network_route_many(
             (source.edge, source.location),
             [(tc.edge, tc.location) for tc in targets],
             self.get_road_edges,
