@@ -352,6 +352,8 @@ def road_network_route_many(source_edge_location,
             return adhoc_network[node]
         adhoc_edges = adhoc_network.get(node)
         if adhoc_edges:
+            if get_edges(node) is None:
+                return adhoc_edges
             return itertools.chain(get_edges(node), adhoc_edges)
         else:
             return get_edges(node)
