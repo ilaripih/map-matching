@@ -85,6 +85,9 @@ class IndexedIterator(list):
         # Cache it
         self.append(item)
         return item
+    
+    def __next__(self):
+        return self.next()
 
     def __iter__(self):
         return self
