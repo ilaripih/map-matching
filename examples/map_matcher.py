@@ -62,8 +62,8 @@ def query_edges_in_sequence_bbox(conn, road_table_name, sequence, search_radius)
     subquery = create_sequence_subquery(len(sequence), ('lon', 'lat'))
 
     stmt = subquery + '''
-    -- NOTE the length unit is in km
-    SELECT edge.gid, edge.source, edge.target, edge.length * 1000, edge.length * 1000
+    -- NOTE the length unit is in meters
+    SELECT edge.id, edge.source, edge.target, edge.length, edge.length
     FROM {road_table_name} AS edge
          CROSS JOIN (SELECT ST_Extent(ST_MakePoint(sequence.lon, sequence.lat))::geometry AS extent FROM sequence) AS extent
     WHERE edge.the_geom && ST_Envelope(ST_Buffer(extent.extent::geography, %s)::geometry)
@@ -76,8 +76,8 @@ def query_edges_in_sequence_bbox(conn, road_table_name, sequence, search_radius)
     cur = conn.cursor()
     cur.execute(stmt, params)
 
-    for gid, source, target, cost, reverse_cost in cur.fetchall():
-        edge = Edge(id=gid,
+    for id, source, target, cost, reverse_cost in cur.fetchall():
+        edge = Edge(id=id,
                     start_node=source,
                     end_node=target,
                     cost=cost,
@@ -125,7 +125,7 @@ def query_candidates(conn, road_table_name, sequence, search_radius):
     stmt = subquery + '''
     SELECT seq.id, seq.lon, seq.lat,
            --- Edge information
-           edge.gid, edge.source, edge.target,
+           edge.id, edge.source, edge.target,
            edge.length, edge.length,
 
            --- Location, a float between 0 and 1 representing the location of the closest point on the edge to the measurement.
@@ -184,7 +184,10 @@ def map_match(conn, road_table_name, sequence, search_radius, max_route_distance
     # If the route distance between two consive measurements are
     # longer than `max_route_distance` in meters, consider it as a
     # breakage
-    matcher = mm.MapMatching(network.get, max_route_distance)
+    matcher = mm.MapMatching(network.get,
+        max_route_distance=max_route_distance,
+        beta=5.0, # default 5.0
+        sigma_z=6.0) # default 4.07
 
     # Match and return the selected candidates along the path
     return list(matcher.offline_match(candidates))
@@ -217,13 +220,13 @@ def main(argv):
     conn.close()
 
     for candidate in candidates:
-        print '         Measurement ID: {0}'.format(candidate.measurement.id)
-        print '             Coordinate: {0:.6f} {1:.6f}'.format(*map(float, (candidate.measurement.lon, candidate.measurement.lat)))
-        print '    Matche d coordinate: {0:.6f} {1:.6f}'.format(*map(float, (candidate.lon, candidate.lat)))
-        print '        Matched edge ID: {0}'.format(candidate.edge.id)
-        print 'Location along the edge: {0:.2f}'.format(candidate.location)
-        print '               Distance: {0:.2f} meters'.format(candidate.distance)
-        print
+        print('         Measurement ID: {}'.format(candidate.measurement.id))
+        print('     Coordinate: {0:.6f} {1:.6f}'.format(*map(float, (candidate.measurement.lon, candidate.measurement.lat))))
+        print('    Matched coordinate: {0:.6f} {1:.6f}'.format(*map(float, (candidate.lon, candidate.lat))))
+        print('        Matched edge ID: {0}'.format(candidate.edge.id))
+        print('Location along the edge: {0:.2f}'.format(candidate.location))
+        print('               Distance: {0:.2f} meters'.format(candidate.distance))
+        print("")
 
     return 0
 
