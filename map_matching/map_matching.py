@@ -2,7 +2,7 @@ from __future__ import division
 
 import itertools
 
-from geopy.distance import vincenty
+from geopy.distance import geodesic
 
 from .shortest_path import *
 from .viterbi_path import *
@@ -127,7 +127,7 @@ class MapMatching(ViterbiSearch):
             # Not reachable
             return -1
         # Geodesic distance based on WGS 84 spheroid
-        great_circle_distance = vincenty(
+        great_circle_distance = geodesic(
             (source.measurement.lat, source.measurement.lon),
             (target.measurement.lat, target.measurement.lon)).meters
         delta = abs(route_distance - great_circle_distance)
@@ -150,7 +150,7 @@ class MapMatching(ViterbiSearch):
             max_path_cost=max_route_distance)
 
         # Geodesic distance based on WGS 84 spheroid
-        great_circle_distance = vincenty(
+        great_circle_distance = geodesic(
             (source.measurement.lat, source.measurement.lon),
             (target_measurement.lat, target_measurement.lon)).meters
 
@@ -221,7 +221,7 @@ class NaiveMapMatching(NaiveViterbiSearch, MapMatching):
             max_path_cost=max_route_distance)
 
         # Geodesic distance based on WGS 84 spheroid
-        great_circle_distance = vincenty(
+        great_circle_distance = geodesic(
             (source.measurement.lat, source.measurement.lon),
             (target_measurement.lat, target_measurement.lon)).meters
 
